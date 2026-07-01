@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.mzstatic.com https://*.apple.com https://avatars.githubusercontent.com https://github.com;">
+  <title>IPATool — App Store Downloader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="light-theme">
+
+  <!-- ═══ Custom Title Bar ═══ -->
+  <header id="titlebar">
+    <div class="titlebar-left">
+      <img src="icon.ico" class="titlebar-icon" style="width: 16px; height: 16px; border-radius: 4px; object-fit: cover;" alt="Icon" />
+      <span class="titlebar-label">IPATool</span>
+    </div>
+    <div class="titlebar-controls">
+      <button class="titlebar-btn" id="btn-minimize" aria-label="Minimize">
+        <svg width="12" height="12" viewBox="0 0 12 12"><rect y="5" width="12" height="1.5" rx=".75" fill="currentColor"/></svg>
+      </button>
+      <button class="titlebar-btn" id="btn-maximize" aria-label="Maximize">
+        <svg width="12" height="12" viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>
+      </button>
+      <button class="titlebar-btn titlebar-btn--close" id="btn-close" aria-label="Close">
+        <svg width="12" height="12" viewBox="0 0 12 12"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══ Main Layout ═══ -->
+  <div id="app-wrapper">
+
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <div class="sidebar-inner">
+        <ul class="nav-list">
+          <li>
+            <button class="nav-item active" data-page="dashboard">
+              <span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-page="auth">
+              <span class="nav-icon">🔐</span><span class="nav-label">Authentication</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-page="search">
+              <span class="nav-icon">🔍</span><span class="nav-label">Search</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-page="download" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span class="nav-icon">⬇️</span><span class="nav-label">Download</span>
+              </div>
+              <span class="sidebar-badge hidden" id="sidebar-queue-badge" style="background: var(--accent-start); color: white; padding: 2px 7px; border-radius: 10px; font-size: 11px; font-weight: 700; min-width: 18px; text-align: center; box-shadow: 0 2px 6px rgba(99,102,241,0.4); margin-right: 4px; z-index: 5;">0</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-page="versions">
+              <span class="nav-icon">📋</span><span class="nav-label">Versions</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-page="logs">
+              <span class="nav-icon">📄</span><span class="nav-label">Application Logs</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-page="settings">
+              <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+            </button>
+          </li>
+          <li style="margin-top: 8px; border-top: 1px solid var(--border-subtle); padding-top: 8px;">
+            <button class="nav-item" id="btn-toggle-theme" style="cursor: pointer;">
+              <span class="nav-icon" id="theme-toggle-icon">🌙</span><span class="nav-label" id="theme-toggle-label">Dark Mode</span>
+            </button>
+          </li>
+        </ul>
+        <div class="sidebar-footer">
+          <div class="sidebar-credits">
+            <a class="credit-link" id="credit-majd" title="Open GitHub profile">
+              <div class="credit-avatar" id="avatar-majd">M</div>
+              <span class="credit-text">Coded by<br><strong>Majd Alfhaily</strong></span>
+            </a>
+            <a class="credit-link" id="credit-mehmet" title="Open GitHub profile">
+              <span class="credit-text credit-text--right">GUI by<br><strong>Mehmet Akif Şimşek</strong></span>
+              <div class="credit-avatar" id="avatar-mehmet">M</div>
+            </a>
+          </div>
+          <span class="version-badge">GUI App v1.0.0</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Content Area -->
+    <main id="content">
+
+      <!-- ══ Dashboard ══ -->
+      <section class="page page--active" id="page-dashboard">
+        <h1 class="page-title gradient-text">IPATool Dashboard</h1>
+        <p class="page-subtitle">Manage and download iOS applications from the App Store</p>
+
+        <div class="status-grid">
+          <div class="status-card" id="card-binary">
+            <div class="status-card__icon">⚙️</div>
+            <div class="status-card__body">
+              <span class="status-card__label">Binary Status</span>
+              <span class="status-card__value" id="status-binary">Checking…</span>
+            </div>
+            <span class="status-dot" id="dot-binary"></span>
+          </div>
+          <div class="status-card" id="card-auth">
+            <div class="status-card__icon">🔐</div>
+            <div class="status-card__body">
+              <span class="status-card__label">Authentication</span>
+              <span class="status-card__value" id="status-auth">Checking…</span>
+            </div>
+            <span class="status-dot" id="dot-auth"></span>
+          </div>
+          <div class="status-card" id="card-version">
+            <div class="status-card__icon">📦</div>
+            <div class="status-card__body">
+              <span class="status-card__label">ipatool Version</span>
+              <span class="status-card__value" id="status-version">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <h2 class="section-heading">Quick Actions</h2>
+          <div class="action-row">
+            <button class="btn btn--primary btn--lg" id="qa-search">
+              <span class="btn-icon">🔍</span> Search Apps
+            </button>
+            <button class="btn btn--primary btn--lg" id="qa-download">
+              <span class="btn-icon">⬇️</span> Download IPA
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ Setup Overlay ══ -->
+      <div class="overlay" id="setup-overlay">
+        <div class="overlay-panel glass-panel">
+          <div class="setup-header">
+            <div class="setup-spinner" id="setup-spinner"></div>
+            <h2 class="gradient-text">Setting Up IPATool</h2>
+            <p class="setup-desc">Downloading ipatool binary from GitHub…</p>
+          </div>
+          <div class="terminal" id="setup-terminal">
+            <div class="terminal-header">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+              <span class="terminal-title">Terminal</span>
+            </div>
+            <div class="terminal-body" id="setup-log"></div>
+          </div>
+          <div class="setup-footer hidden" id="setup-footer">
+            <p class="setup-success">✅ Setup complete!</p>
+            <button class="btn btn--primary" id="setup-continue">Continue</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Authentication ══ -->
+      <section class="page" id="page-auth">
+        <h1 class="page-title">Authentication</h1>
+        <p class="page-subtitle">Sign in with your Apple ID</p>
+
+        <!-- Logged-out state -->
+        <div class="auth-card glass-panel" id="auth-login-form">
+          <form id="form-login" autocomplete="off">
+            <div class="form-group">
+              <label class="form-label" for="input-email">Apple ID (Email)</label>
+              <input class="form-input" type="email" id="input-email" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="input-password">Password</label>
+              <div style="position: relative; display: flex; align-items: center;">
+                <input class="form-input" type="password" id="input-password" placeholder="••••••••" required style="width: 100%; padding-right: 42px;">
+                <button type="button" id="btn-toggle-password" style="position: absolute; right: 12px; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; z-index: 10;" aria-label="Toggle Password Visibility">
+                  👁️
+                </button>
+              </div>
+            </div>
+            <button type="submit" class="btn btn--primary btn--block" id="btn-login">
+              <span class="btn-text">Sign In</span>
+              <span class="btn-loader hidden"></span>
+            </button>
+          </form>
+        </div>
+
+        <!-- 2FA prompt -->
+        <div class="auth-card glass-panel hidden" id="auth-2fa-form">
+          <h3 class="form-heading">Two-Factor Authentication</h3>
+          <p class="form-hint">Enter the verification code sent to your device.</p>
+          <form id="form-2fa" autocomplete="off">
+            <div class="form-group">
+              <label class="form-label" for="input-2fa">Verification Code</label>
+              <input class="form-input form-input--code" type="text" id="input-2fa" maxlength="6" placeholder="000000" required>
+            </div>
+            <div style="display: flex; gap: 12px; margin-top: 10px;">
+              <button type="button" class="btn btn--outline" id="btn-2fa-back" style="flex: 1;">Back</button>
+              <button type="submit" class="btn btn--primary" id="btn-2fa" style="flex: 2;">
+                <span class="btn-text">Verify</span>
+                <span class="btn-loader hidden"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Logged-in state -->
+        <div class="auth-card glass-panel hidden" id="auth-info-panel">
+          <div class="auth-avatar">🧑‍💻</div>
+          <h3 class="auth-name" id="auth-display-name">—</h3>
+          <p class="auth-email" id="auth-display-email">—</p>
+          <button class="btn btn--danger btn--block" id="btn-logout">
+            <span class="btn-text">Sign Out</span>
+            <span class="btn-loader hidden"></span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ══ Search ══ -->
+      <section class="page" id="page-search">
+        <h1 class="page-title">Search App Store</h1>
+        <p class="page-subtitle">Find iOS applications by name or keyword</p>
+
+        <div class="search-bar glass-panel">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" type="text" id="input-search" placeholder="Search for apps…">
+          <select class="search-limit" id="select-limit">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+          <button class="btn btn--primary" id="btn-search">
+            <span class="btn-text">Search</span>
+            <span class="btn-loader hidden"></span>
+          </button>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="search-empty">
+          <div class="empty-state__icon">🔎</div>
+          <h3 class="empty-state__title">Search for Apps</h3>
+          <p class="empty-state__desc">Enter an app name above to search the App Store</p>
+        </div>
+
+        <!-- Results Grid -->
+        <div class="results-grid hidden" id="search-results"></div>
+      </section>
+
+      <!-- ══ Download ══ -->
+      <section class="page" id="page-download">
+        <h1 class="page-title">Download IPA</h1>
+        <p class="page-subtitle">Download an IPA file from the App Store</p>
+
+        <div class="download-form glass-panel">
+          <form id="form-download" autocomplete="off">
+            <div class="form-group">
+              <label class="form-label" for="input-dl-bundle">Bundle Identifier</label>
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <div id="dl-form-app-icon-container" style="display: none; width: 44px; height: 44px; flex-shrink: 0;">
+                  <img id="dl-form-app-icon" src="" style="width: 100%; height: 100%; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 10px rgba(0,0,0,0.3);" alt="App Icon" />
+                </div>
+                <input class="form-input" type="text" id="input-dl-bundle" placeholder="com.example.app" style="flex: 1;">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="input-dl-ver">Version ID (Release ID - Optional)</label>
+              <input class="form-input" type="text" id="input-dl-ver" placeholder="e.g. 83829283 (leave blank for latest)">
+            </div>
+            <div class="form-row">
+              <div class="form-group form-group--grow">
+                <label class="form-label" for="input-dl-output">Output Directory</label>
+                <input class="form-input" type="text" id="input-dl-output" placeholder="Select a directory…" readonly>
+              </div>
+              <button type="button" class="btn btn--outline" id="btn-dl-browse">Browse</button>
+            </div>
+            <label class="checkbox-label">
+              <input type="checkbox" id="check-purchase" checked>
+              <span class="checkbox-custom"></span>
+              <span>Auto-acquire license (purchase)</span>
+            </label>
+            <button type="submit" class="btn btn--primary btn--block" id="btn-dl-start">
+              <span class="btn-text">⬇️ Start Download</span>
+              <span class="btn-loader hidden"></span>
+            </button>
+          </form>
+        </div>
+
+        <!-- ══ Download Queue Container ══ -->
+        <div class="queue-container glass-panel hidden" id="queue-container" style="margin-top: 24px; padding: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+            <h3 style="margin: 0; font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+              <span>📥</span> Download Queue <span id="queue-count-badge" style="background: var(--accent-primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">0</span>
+            </h3>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button class="btn btn--primary btn--sm hidden" id="btn-start-queue" style="font-size: 12.5px; cursor: pointer; border-radius: 6px; background: linear-gradient(135deg, var(--accent-start), var(--accent-end)); border: none; color: white; padding: 6px 14px; font-weight: 600; display: flex; align-items: center; gap: 4px; box-shadow: 0 4px 12px var(--accent-glow);">▶️ Start Queue Download</button>
+              <button class="btn btn--outline btn--sm" id="btn-clear-completed" style="font-size: 12.5px; cursor: pointer; border-radius: 6px;">🧹 Clear Completed</button>
+            </div>
+          </div>
+          <div id="queue-list" style="display: flex; flex-direction: column; gap: 16px;">
+            <!-- Queue items will be rendered dynamically here -->
+          </div>
+        </div>
+
+        <div class="progress-container hidden" id="dl-progress-container">
+          <div class="dl-app-icon-row" id="dl-app-icon-row" style="display:none;">
+            <img class="dl-app-icon" id="dl-app-icon" src="" alt="App Icon" />
+            <span class="dl-app-name" id="dl-app-name"></span>
+          </div>
+          <div class="progress-bar-win7">
+            <div class="progress-bar-fill-win7" id="dl-progress-bar-fill">
+              <div class="progress-bar-glow"></div>
+            </div>
+            <span class="progress-text-win7" id="dl-progress-text">0%</span>
+          </div>
+          <p class="progress-status-text" id="dl-progress-status">Downloading...</p>
+          <button class="btn btn--danger btn--sm" id="btn-dl-cancel" style="margin-top: 10px;">
+            ✖ Cancel Download
+          </button>
+        </div>
+
+        <div class="terminal hidden" id="dl-terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span class="terminal-title">Download Progress</span>
+          </div>
+          <div class="terminal-body" id="dl-log"></div>
+        </div>
+
+        <div class="dl-complete hidden" id="dl-complete">
+          <p class="dl-complete__text">✅ Download complete</p>
+          <p class="dl-complete__path" id="dl-complete-path"></p>
+          <button class="btn btn--outline" id="btn-dl-open">📂 Open File Location</button>
+        </div>
+      </section>
+
+      <!-- ══ Versions ══ -->
+      <section class="page" id="page-versions">
+        <h1 class="page-title">App Versions</h1>
+        <p class="page-subtitle">List available versions of an app</p>
+
+        <div class="versions-bar glass-panel">
+          <div class="form-group form-group--grow" style="margin-bottom:0">
+            <input class="form-input" type="text" id="input-ver-bundle" placeholder="com.example.app">
+          </div>
+          <button class="btn btn--primary" id="btn-versions">
+            <span class="btn-text">List Versions</span>
+            <span class="btn-loader hidden"></span>
+          </button>
+          <button class="btn btn--outline hidden" id="btn-versions-load-all">
+            <span class="btn-text">Load All Details</span>
+            <span class="btn-loader hidden"></span>
+          </button>
+        </div>
+
+        <div class="empty-state" id="versions-empty">
+          <div class="empty-state__icon">📋</div>
+          <h3 class="empty-state__title">No Versions Loaded</h3>
+          <p class="empty-state__desc">Enter a bundle identifier and click List Versions</p>
+        </div>
+
+        <div class="versions-table-wrapper hidden" id="versions-table-wrapper">
+          <table class="versions-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Version</th>
+                <th>Release ID (External ID)</th>
+                <th>Release Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="versions-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ══ Settings ══ -->
+      <section class="page" id="page-settings">
+        <h1 class="page-title">Settings</h1>
+        <p class="page-subtitle">Configure application preferences</p>
+
+        <div class="settings-card glass-panel">
+          <div class="form-group">
+            <label class="form-label" for="input-set-output">Default Output Directory</label>
+            <div class="form-row">
+              <input class="form-input" type="text" id="input-set-output" placeholder="Select a directory…" readonly>
+              <button type="button" class="btn btn--outline" id="btn-set-browse">Browse</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="input-set-country">Country Code</label>
+            <input class="form-input" type="text" id="input-set-country" placeholder="US" maxlength="2">
+            <span class="form-hint">Common: US, GB, DE, JP, CN, TR</span>
+          </div>
+
+          <div class="form-group" style="margin-top: 20px;">
+            <label class="form-label" for="select-set-concurrent">Maximum Concurrent Downloads</label>
+            <select class="form-input" id="select-set-concurrent" style="cursor: pointer; background-color: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-subtle); padding: 10px 12px; border-radius: 8px; width: 100%; font-size: 13.5px;">
+              <option value="1">1 (Single download - Queue sequentially)</option>
+              <option value="2">2 Concurrent downloads</option>
+              <option value="3">3 Concurrent downloads</option>
+            </select>
+            <span class="form-hint">Choose how many files can download at the same time. Others will wait in queue.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ipatool Binary Path</label>
+            <div class="form-row">
+              <input class="form-input" type="text" id="input-set-binary" placeholder="Not found" readonly>
+              <button type="button" class="btn btn--outline" id="btn-set-redownload">Re-download</button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 20px;">
+            <label class="form-label">Account Session</label>
+            <button type="button" class="btn btn--danger btn--block" id="btn-set-reset-auth" style="cursor:pointer;">
+              🗑️ Reset Login Info / Sign Out
+            </button>
+          </div>
+
+          <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+            <label class="form-label">Maintenance</label>
+            <div style="display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+              <span style="font-size: 13.5px; color: var(--text-secondary);">Interrupted download cleanup (.ipa.tmp files)</span>
+              <button type="button" class="btn btn--outline btn--sm" id="btn-set-clean-temp" style="cursor:pointer; color: var(--danger); border-color: rgba(239,68,68,0.3);">
+                <span class="btn-text">🗑️ Clean Temp Files</span>
+                <span class="btn-loader hidden"></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+            <label class="form-label">IPATool CLI Backend Update</label>
+            <div style="display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+              <span id="cli-version-text" style="font-size: 13.5px; color: var(--text-secondary);">Current: Loading... | Latest: Loading...</span>
+              <button type="button" class="btn btn--outline btn--sm" id="btn-set-update-cli" style="cursor:pointer;" disabled>
+                <span class="btn-text">🔄 Update CLI</span>
+                <span class="btn-loader hidden"></span>
+              </button>
+            </div>
+            <p id="cli-update-status" style="font-size: 13px; margin-top: 6px; display: none; font-weight: 500;"></p>
+          </div>
+
+          <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-subtle); padding-top: 16px;">
+            <label class="form-label">GUI Application Update</label>
+            <div style="display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+              <span id="gui-version-text" style="font-size: 13.5px; color: var(--text-secondary);">Current Version: Loading...</span>
+              <button type="button" class="btn btn--outline btn--sm" id="btn-set-check-update" style="cursor:pointer;">
+                <span class="btn-text">🔄 Check for Updates</span>
+                <span class="btn-loader hidden"></span>
+              </button>
+            </div>
+            <p id="gui-update-status" style="font-size: 13px; margin-top: 6px; display: none; font-weight: 500;"></p>
+          </div>
+
+          <button class="btn btn--primary btn--block" id="btn-set-save">
+            <span class="btn-text">💾 Save Settings</span>
+            <span class="btn-loader hidden"></span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ══ Logs ══ -->
+      <section class="page" id="page-logs">
+        <h1 class="page-title">Application Logs</h1>
+        <p class="page-subtitle">View errors and messages occurred during this session</p>
+
+        <div class="terminal" id="logs-terminal" style="margin-top: 20px;">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span class="terminal-title">Application Logs</span>
+            <div style="margin-left: auto; display: flex; gap: 8px;">
+              <button class="btn btn--xs btn--outline" id="btn-logs-copy" style="cursor:pointer;">📋 Copy</button>
+              <button class="btn btn--xs btn--outline" id="btn-logs-clear" style="cursor:pointer;">🗑️ Clear</button>
+            </div>
+          </div>
+          <div class="terminal-body" id="logs-body" style="height: 400px; overflow-y: auto; font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 13px; line-height: 1.5; color: #e4e4e7; background: #09090b; padding: 15px; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;">
+            <div class="log-empty" id="logs-empty" style="color: var(--text-muted); text-align: center; margin-top: 150px;">No error logs recorded.</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Custom Modal Confirm Dialog -->
+  <div class="overlay" id="confirm-overlay">
+    <div class="overlay-panel glass-panel confirm-panel" style="max-width: 400px; padding: 30px;">
+      <div style="font-size: 36px; margin-bottom: 12px; filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.3));">📋</div>
+      <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 10px; color: var(--text-primary);" id="confirm-title">Load More Versions?</h3>
+      <p style="color: var(--text-secondary); font-size: 13.5px; margin-bottom: 24px; line-height: 1.5;" id="confirm-message">
+        15 versions have been loaded. Do you want to continue loading the next versions?
+      </p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button class="btn btn--primary" id="confirm-btn-yes" style="padding: 8px 18px; font-size: 13px; cursor: pointer;">Yes, Continue</button>
+        <button class="btn btn--outline" id="confirm-btn-no" style="padding: 8px 18px; font-size: 13px; cursor: pointer;">No, Stop</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Modal Pause/Stop Dialog -->
+  <div class="overlay" id="cancel-modal">
+    <div class="overlay-panel glass-panel confirm-panel" style="max-width: 420px; padding: 30px; display: flex; flex-direction: column; gap: 16px; text-align: center;">
+      <div style="font-size: 36px; filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.3));">⏸️</div>
+      <h3 style="font-size: 19px; font-weight: 700; color: var(--text-primary); margin: 0;">Download Paused</h3>
+      <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.5; margin: 0;" id="cancel-modal-message">
+        What would you like to do with this download?
+      </p>
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px; width: 100%;">
+        <button class="btn btn--primary" id="cancel-modal-btn-keep" style="background: linear-gradient(135deg, var(--accent-start), var(--accent-end)); border: none; color: white; padding: 10px; font-size: 13.5px; cursor: pointer; border-radius: 8px;">▶️ Continue Downloading</button>
+        <button class="btn btn--outline" id="cancel-modal-btn-pause" style="background: linear-gradient(135deg, #f59e0b, #d97706); border: none; color: white; padding: 10px; font-size: 13.5px; cursor: pointer; border-radius: 8px;">⏸️ Keep Paused</button>
+        <button class="btn btn--danger" id="cancel-modal-btn-stop" style="padding: 10px; font-size: 13.5px; cursor: pointer; border-radius: 8px;">⏹️ Stop (Cancel & Reset)</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

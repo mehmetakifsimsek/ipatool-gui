@@ -1,0 +1,50 @@
+{
+  "name": "ipatool-gui",
+  "version": "1.0.0",
+  "description": "Initial Release",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron . --user-data-dir=C:\\Users\\Public\\ipatool-gui",
+    "build": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "beforePack": "./beforePack.js",
+    "appId": "com.ipatool.gui",
+    "productName": "IPATool GUI",
+    "copyright": "GUI by: https://github.com/mehmetakifsimsek",
+    "publish": null,
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "IPATool GUI",
+      "language": "1033",
+      "installerLanguages": ["en_US"],
+      "include": "installer.nsh",
+      "artifactName": "IPAToolGUI Setup v${version}.${ext}"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "styles.css",
+      "renderer.js",
+      "icon.ico"
+    ],
+    "extraResources": [
+      {
+        "from": "bin/ipatool.exe",
+        "to": "bin/ipatool.exe"
+      }
+    ]
+  }
+}
